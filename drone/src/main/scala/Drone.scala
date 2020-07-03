@@ -1,8 +1,10 @@
-import java.util.{Calendar, Date, Properties, UUID}
+import java.time.{LocalDate, Month}
+import java.util.concurrent.ThreadLocalRandom
+import java.util.{Properties, UUID}
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
-import play.api.libs.json.{Format, JsNumber, JsObject, JsResult, JsString, JsValue, Json, OWrites}
+import play.api.libs.json.{Json, OWrites}
 
 import scala.util.Random
 
@@ -11,7 +13,7 @@ case class Localisation(var longitude: Float, var latitude: Float)
 case class ViolationMessage(var code: Int, var imageId: String)
 
 case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   var position: Localisation, var time: Date, var battery: Int)
+                   var position: Localisation, var time: LocalDate, var battery: Int)
 
 class Drone() {
 
@@ -31,9 +33,17 @@ class Drone() {
   implicit val violationJson: OWrites[ViolationMessage] = Json.writes[ViolationMessage]
   implicit val messageJson: OWrites[Message] = Json.writes[Message]
 
+  def randomDate(startInclusive: LocalDate, endExclusive: LocalDate): LocalDate = {
+    val startEpochDay = startInclusive.toEpochDay
+    val endEpochDay = endExclusive.toEpochDay
+    val randomDay = ThreadLocalRandom.current.nextLong(startEpochDay, endEpochDay)
+
+    LocalDate.ofEpochDay(randomDay)
+  }
+
   def sendMessage(): Unit = {
 
-    val time: Date = Calendar.getInstance.getTime
+    val time: LocalDate = randomDate(LocalDate.of(2020, Month.JANUARY, 1), LocalDate.now())
 
     val position = Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat())
 
@@ -89,7 +99,7 @@ class Drone() {
     }
     )
 
-    Thread.sleep(5000)
+    Thread.sleep(1000)
 
     sendMessage()
   }
