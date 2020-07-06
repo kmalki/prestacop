@@ -1,6 +1,8 @@
+import java.sql.Time
 import java.time.{LocalDate, Month}
 import java.util.concurrent.ThreadLocalRandom
 import java.util.{Properties, UUID}
+import java.time.format.DateTimeFormatter
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
@@ -13,13 +15,15 @@ case class Localisation(var longitude: Float, var latitude: Float)
 case class ViolationMessage(var code: Int, var imageId: String)
 
 case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   var position: Localisation, var time: LocalDate, var battery: Int)
+                   var position: Localisation, var date: String, var time: String, var battery: Int)
 
 class Drone() {
 
-  var droneId: String = UUID.randomUUID().toString
+  val droneId: String = UUID.randomUUID().toString
 
   var battery: Int = 100
+
+  val pattern: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
   val props: Properties = new Properties()
 
@@ -33,19 +37,29 @@ class Drone() {
   implicit val violationJson: OWrites[ViolationMessage] = Json.writes[ViolationMessage]
   implicit val messageJson: OWrites[Message] = Json.writes[Message]
 
-  def randomDate(startInclusive: LocalDate, endExclusive: LocalDate): LocalDate = {
-    val startEpochDay = startInclusive.toEpochDay
-    val endEpochDay = endExclusive.toEpochDay
-    val randomDay = ThreadLocalRandom.current.nextLong(startEpochDay, endEpochDay)
+  def randomDate(): String = {
+    pattern.format(LocalDate.ofEpochDay(
+      ThreadLocalRandom.current.nextLong(LocalDate.of(2020, Month.JANUARY, 1).toEpochDay,
+        LocalDate.now().toEpochDay)))
+  }
 
-    LocalDate.ofEpochDay(randomDay)
+  def randomHour(): String = {
+    val time = new Time(Random.nextInt(24 * 60 * 60 * 1000).asInstanceOf[Long]).toString
+    time.split(":").dropRight(1).mkString("")
+  }
+
+  def randomLocalisation(): Localisation = {
+    Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat())
+  }
+
+  def updateBattery(): Unit = {
+    battery = battery - Random.nextInt(3) match {
+      case 0 => 1
+      case _ => 0
+    }
   }
 
   def sendMessage(): Unit = {
-
-    val time: LocalDate = randomDate(LocalDate.of(2020, Month.JANUARY, 1), LocalDate.now())
-
-    val position = Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat())
 
     val choice = Random.nextInt(5)
 
@@ -56,8 +70,9 @@ class Drone() {
           violation = true,
           droneId = droneId,
           violationMessage = Some(ViolationMessage(Random.nextInt(100), UUID.randomUUID().toString)),
-          position = position,
-          time = time,
+          position = randomLocalisation(),
+          date = randomDate(),
+          time = randomHour(),
           battery = battery
         )
         //alert code = 100
@@ -66,8 +81,9 @@ class Drone() {
           violation = true,
           droneId = droneId,
           violationMessage = Some(ViolationMessage(100, UUID.randomUUID().toString)),
-          position = position,
-          time = time,
+          position = randomLocalisation(),
+          date = randomDate(),
+          time = randomHour(),
           battery = battery
         )
       //regular message
@@ -76,18 +92,15 @@ class Drone() {
           violation = false,
           droneId = droneId,
           violationMessage = None,
-          position = position,
-          time = time,
+          position = randomLocalisation(),
+          date = randomDate(),
+          time = randomHour(),
           battery = battery
         )
     }
 
-    println("code"+choice)
-
-    val jsMsg = Json.toJson(message)
-
     val record = new ProducerRecord[String, String]("messages",
-      jsMsg.toString
+      Json.toJson(message).toString
     )
 
     producer.send(record, (recordMetaData: RecordMetadata, exception: Exception) => {
@@ -99,9 +112,13 @@ class Drone() {
     }
     )
 
+    updateBattery()
+
     Thread.sleep(1000)
 
     sendMessage()
+
+    producer.close()
   }
 
 }
