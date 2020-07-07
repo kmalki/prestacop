@@ -1,3 +1,5 @@
+import drone.Drone
+
 object Main {
   def main(args: Array[String]): Unit = {
     val drone: Drone = new Drone

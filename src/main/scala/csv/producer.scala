@@ -14,7 +14,7 @@ object ProducerExample extends App {
 
   val TOPIC="test"
 
-  val input = io.Source.fromFile("Parking_Violations_Issued_-_Fiscal_Year_2015.csv").getLines()
+  /*val input = io.Source.fromFile("Parking_Violations_Issued_-_Fiscal_Year_2015.csv").getLines()
 
   def produce( x: Iterator[String]){
     if (x.hasNext == true){
@@ -26,6 +26,6 @@ object ProducerExample extends App {
       producer.close()
     }
   }
-  produce(input)
+  produce(input)*/
 
 }

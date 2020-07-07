@@ -1,3 +1,5 @@
+package drone
+
 import java.sql.Time
 import java.time.{LocalDate, Month}
 import java.util.concurrent.ThreadLocalRandom
@@ -53,9 +55,11 @@ class Drone() {
   }
 
   def updateBattery(): Unit = {
-    battery = battery - Random.nextInt(3) match {
+    battery = battery - {
+      Random.nextInt(3) match {
       case 0 => 1
       case _ => 0
+      }
     }
   }
 
