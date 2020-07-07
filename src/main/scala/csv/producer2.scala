@@ -3,12 +3,12 @@ import play.api.libs.json.{Json, OWrites}
 import java.util.{Date, Properties, UUID}
 import scala.util.Random
 
-//case class Localisation(var longitude: Float, var latitude: Float)
-//case class ViolationMessage(var code: Int, var imageId: String)
-//case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   //var position: Localisation, var Hour: String ,var time: Date, var battery: Int)
+case class Localisation(var longitude: Float, var latitude: Float)
+case class ViolationMessage(var code: Int, var imageId: String)
+case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
+                   var position: Localisation, var Hour: String ,var time: Date, var battery: Int)
 
-class Producer {
+class Producertwo {
 
   val  props = new Properties()
 
@@ -24,7 +24,6 @@ class Producer {
   implicit val messageJson: OWrites[Message] = Json.writes[Message]
 
   val format = new java.text.SimpleDateFormat("MM/dd/yyyy")
-  val input = io.Source.fromFile("/home/hedi/IdeaProjects/drone/csv/project/Parking_Violations_Issued_-_Fiscal_Year_2015.csv").getLines()
 
 
   def ajustHour(x: String,c: String): String = c match {
@@ -46,28 +45,26 @@ class Producer {
       val hourstr = if (hour.length > 4) hour.substring(4,5) else "N"
 
       //cree le message
-      val message = Message(violation= true,
+      val jsMsg = Json.toJson(
+        Message(
+          violation= true,
         droneId = UUID.randomUUID().toString,
         violationMessage = Some(ViolationMessage(list.apply(5).toInt, UUID.randomUUID().toString)),
         position = Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat()),
         Hour = ajustHour(hour,hourstr),
         time = format.parse(dateo),
-        battery = 100 )
+        battery = 100 ))
 
-      val jsMsg = Json.toJson(message)
       println(jsMsg)
       print(list.apply(0))
       val record = new ProducerRecord[String, String]("test", jsMsg.toString)
       //val record = new ProducerRecord(TOPIC, x.next())
-
-      producer.send(record)
       produce(x)
     }
     else{
       producer.close()
     }
   }
-  produce(input)
 }
 
 

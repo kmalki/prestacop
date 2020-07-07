@@ -33,7 +33,8 @@ object ConsumerExample extends App {
   val csvWriter = new CSVWriter(outputFile)
 
 
-
+  val input = io.Source.fromFile("/home/hedi/IdeaProjects/drone/csv/project/Parking_Violations_Issued_-_Fiscal_Year_2015.csv").getLines()
+  input.next()
 
 
 
@@ -46,13 +47,13 @@ object ConsumerExample extends App {
   def rcd( x: Iterable[org.apache.kafka.clients.consumer.ConsumerRecord[String,String]],y: Array[String]){
     if (x.isEmpty){
       grosseList(y)
-      //println("------------------------------------------")
     }
     else{
       println(x.head.value())
       val z = y:+(x.head.value())
       rcd(x.tail,z)
     }
+
   }
 
   def consumme(){
