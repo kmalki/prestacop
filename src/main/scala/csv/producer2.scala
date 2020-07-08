@@ -1,7 +1,11 @@
+package csv
+
 import org.apache.kafka.clients.producer._
 import play.api.libs.json.{Json, OWrites}
 import java.util.{Date, Properties, UUID}
-import scala.util.Random
+
+import scala.annotation.tailrec
+import scala.util.{Random, Try}
 
 case class Localisation(var longitude: Float, var latitude: Float)
 case class ViolationMessage(var code: Int, var imageId: String)
@@ -25,14 +29,17 @@ class Producertwo {
 
   val format = new java.text.SimpleDateFormat("MM/dd/yyyy")
 
+  def tryToInt( s: String ): Option[Int] = Try(s.toInt).toOption
 
   def ajustHour(x: String,c: String): String = c match {
-    case "P" => (x.substring(0,4).toInt+1200).toString
+    case "P" => if (tryToInt(x.substring(0,4)) == None){"1200"}
+                else {(x.substring(0,4).toInt+1200).toString}
     case "A" => x.substring(0,4)
     case "N" => "1200"
   }
 
-  def produce(x: Iterator[String]) {
+  @tailrec
+  final def produce(x: Iterator[String]) {
     //verifie si ce n'est pas la dernieres ligne
     if (x.hasNext) {
 
@@ -58,6 +65,7 @@ class Producertwo {
       println(jsMsg)
       print(list.apply(0))
       val record = new ProducerRecord[String, String]("test", jsMsg.toString)
+      producer.send(record)
       //val record = new ProducerRecord(TOPIC, x.next())
       produce(x)
     }
