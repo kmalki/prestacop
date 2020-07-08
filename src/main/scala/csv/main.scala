@@ -22,6 +22,7 @@ object main {
     def matchCsv(x: List[String]): Any = x match {
       case head::tail => runProducer(head);matchCsv(tail)
       case head::Nil => runProducer(head)
+      case Nil => println("fin")
       case _ => println("error")
     }
 
