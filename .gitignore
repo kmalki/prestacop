@@ -1,3 +1,9 @@
 */target/*
+/target
 */project/*
-*/.idea/*
+/project
+/tmp/*
+/drone_msg
+/archived_nypd_msg
+/csv/*
+!csv/.gitkeep

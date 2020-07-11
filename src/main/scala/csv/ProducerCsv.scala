@@ -2,7 +2,9 @@ package csv
 
 import org.apache.kafka.clients.producer._
 import play.api.libs.json.{Json, OWrites}
-import java.util.{Date, Properties, UUID}
+import java.util.{Properties, UUID}
+
+import org.apache.kafka.common.serialization.StringSerializer
 
 import scala.annotation.tailrec
 import scala.util.{Random, Try}
@@ -10,15 +12,15 @@ import scala.util.{Random, Try}
 case class Localisation(var longitude: Float, var latitude: Float)
 case class ViolationMessage(var code: Int, var imageId: String)
 case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   var position: Localisation, var Hour: String ,var time: Date, var battery: Int)
+                   var position: Localisation, var date: String, var time: String, var battery: Int)
 
-class Producertwo {
+class ProducerCsv {
 
   val  props = new Properties()
 
-  props.put("bootstrap.servers", "localhost:9092")
-  props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-  props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+  props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+  props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+  props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
 
   val producer = new KafkaProducer[String, String](props)
 
@@ -27,12 +29,10 @@ class Producertwo {
   implicit val violationJson: OWrites[ViolationMessage] = Json.writes[ViolationMessage]
   implicit val messageJson: OWrites[Message] = Json.writes[Message]
 
-  val format = new java.text.SimpleDateFormat("MM/dd/yyyy")
-
   def tryToInt( s: String ): Option[Int] = Try(s.toInt).toOption
 
   def ajustHour(x: String,c: String): String = c match {
-    case "P" => if (tryToInt(x.substring(0,4)) == None){"1200"}
+    case "P" => if (tryToInt(x.substring(0, 4)).isEmpty){"1200"}
                 else {(x.substring(0,4).toInt+1200).toString}
     case "A" => x.substring(0,4)
     case "N" => "1200"
@@ -47,9 +47,9 @@ class Producertwo {
       val list = x.next().replaceAll(""",(?!(?:[^"]*"[^"]*")*[^"]*$)""","").split(",")
 
       //affecte les bonnes valeurs
-      val dateo = list.apply(4) //transformer en format date
-      val hour = list.apply(19) // transformer en heure
-      val hourstr = if (hour.length > 4) hour.substring(4,5) else "N"
+      val date_msg = list.apply(4) //transformer en format date
+      val hour_msg = list.apply(19) // transformer en heure
+      val hourstr = if (hour_msg.length > 4) hour_msg.substring(4,5) else "N"
 
       //cree le message
       val jsMsg = Json.toJson(
@@ -58,15 +58,24 @@ class Producertwo {
         droneId = UUID.randomUUID().toString,
         violationMessage = Some(ViolationMessage(list.apply(5).toInt, UUID.randomUUID().toString)),
         position = Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat()),
-        Hour = ajustHour(hour,hourstr),
-        time = format.parse(dateo),
-        battery = 100 ))
+        time = ajustHour(hour_msg, hourstr),
+        date = date_msg,
+        battery = 100 )
+      )
 
-      println(jsMsg)
-      print(list.apply(0))
-      val record = new ProducerRecord[String, String]("test", jsMsg.toString)
-      producer.send(record)
-      //val record = new ProducerRecord(TOPIC, x.next())
+      println(jsMsg.toString())
+
+      producer.send(
+        new ProducerRecord[String, String]("csv-messages", jsMsg.toString),
+        (recordMetaData: RecordMetadata, exception: Exception) => {
+          if(exception!=null) {
+            exception.printStackTrace()
+          }else{
+            println(s"Message about the sent record: $recordMetaData")
+          }
+        }
+      )
+
       produce(x)
     }
     else{

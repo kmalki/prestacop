@@ -56,19 +56,16 @@ class Drone() {
 
   def updateBattery(): Unit = {
     battery = battery - {
-      Random.nextInt(3) match {
+      Random.nextInt(1000) match {
       case 0 => 1
       case _ => 0
       }
     }
   }
 
-  def sendMessage(): Unit = {
-
-    val choice = Random.nextInt(5)
-
-    val message = choice match {
-        //violation
+  def initMessage(): Message = {
+    Random.nextInt(3) match {
+      //violation
       case 0 =>
         Message(
           violation = true,
@@ -79,7 +76,7 @@ class Drone() {
           time = randomHour(),
           battery = battery
         )
-        //alert code = 100
+      //alert code = 100
       case 1 =>
         Message(
           violation = true,
@@ -102,25 +99,24 @@ class Drone() {
           battery = battery
         )
     }
+  }
 
-    val record = new ProducerRecord[String, String]("messages",
-      Json.toJson(message).toString
-    )
+  def sendMessage(): Unit = {
 
-    producer.send(record, (recordMetaData: RecordMetadata, exception: Exception) => {
-      if(exception!=null) {
-        exception.printStackTrace()
-      }else{
-        println(s"Message about the sent record: $recordMetaData")
-      }
+    Stream.from(1).foreach{
+      _ => producer.send(
+        new ProducerRecord[String, String]("drone-messages", Json.toJson(initMessage()).toString),
+        (recordMetaData: RecordMetadata, exception: Exception) => {
+          if(exception!=null) {
+            exception.printStackTrace()
+          }else{
+            println(s"Message about the sent record: $recordMetaData")
+          }
+        }
+      )
+        updateBattery()
+        Thread.sleep(1000)
     }
-    )
-
-    updateBattery()
-
-    Thread.sleep(1000)
-
-    sendMessage()
 
     producer.close()
   }
