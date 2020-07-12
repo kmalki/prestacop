@@ -115,7 +115,7 @@ class Drone() {
         }
       )
         updateBattery()
-        Thread.sleep(1000)
+ //       Thread.sleep(1000)
     }
 
     producer.close()
