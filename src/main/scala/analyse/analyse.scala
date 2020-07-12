@@ -42,7 +42,7 @@ object analyse {
 
     /* Les drones qui envoient le plus d'alertes */
 
-   /val df_drone_alerte_most = df.filter(col("code").isNotNull).filter(col("code")===842).groupBy("droneId","code").count().sort(desc("count"))
+   val df_drone_alerte_most = df.filter(col("code").isNotNull).filter(col("code")===842).groupBy("droneId","code").count().sort(desc("count"))
     df_drone_alerte_most.show(5)
 
     /* Le nombre d'infraction par année */
