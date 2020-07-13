@@ -1,5 +1,6 @@
 package analyse
 
+import email.Consumer.alert.AutomaticEmailSender.sendMail
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{explode, split}
 import org.apache.spark.sql.functions._
@@ -68,10 +69,11 @@ object analyse {
 
     /* Infraction qui ont eu lieu à partir de janvier 2017 */
     val df_dategr = df.filter(to_date(df("date"),"MM/dd/yyyy").geq(lit("2017-01-01")))
-    df_dategr.show()
+    df_dategr.show(5)
     /* la batterie moyenne */
     val df_moyen_batterie = df.select(avg("battery"))
 
+    sendMail("test", "Alerte drone "+"id_drone"+" Besoin d'intervention humaine" +"temps a mettre en variable scala.datetime")
 
   }
 
