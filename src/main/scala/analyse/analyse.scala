@@ -16,33 +16,38 @@ object analyse {
 
 
 
-    val df = spark.read.option("header", "true")
+    val df = spark.read.option("header", "true").option("inferSchema","true")
       .csv("/home/yanis/Projet_Spark_Streaming/prestacop/archived_nypd_msg/part*.csv")
+
+
+    //spark.sparkContext.setLogLevel("OFF")
+
+    //df.printSchema()
+    val df_input=df.filter(col("code").isNotNull).cache()
 
     println("nombre de lignes des csvs : " +df.count())
 
 
-
     /* L'infraction la plus courante */
 
-    val df_infrac_courant = df.filter(col("code").isNotNull).groupBy("code").count().sort(desc("count"))
+    val df_infrac_courant = df_input.groupBy("code").count().sort(desc("count"))
     df_infrac_courant.show(5)
 
 
-  /* Les violations en fonction des drones */
+    /* Les violations en fonction des drones */
 
-   val df_drone_violation = df.filter(col("code").isNotNull).groupBy("droneId", "code").count().sort(desc("count"))
+    val df_drone_violation = df_input.groupBy("droneId", "code").count().sort(desc("count"))
     df_drone_violation.show(10)
 
 
     /* Localisation des points d'infractions */
 
-    val df_place_violation = df.filter(col("code").isNotNull).groupBy("latitude", "longitude").count().sort(desc("count"))
-      df_place_violation.show(10)
+    val df_place_violation = df_input.groupBy("latitude", "longitude").count().sort(desc("count"))
+    df_place_violation.show(10)
 
     /* Les drones qui envoient le plus d'alertes */
 
-   val df_drone_alerte_most = df.filter(col("code").isNotNull).filter(col("code")===842).groupBy("droneId","code").count().sort(desc("count"))
+    val df_drone_alerte_most = df_input.filter(col("code")===842).groupBy("droneId","code").count().sort(desc("count"))
     df_drone_alerte_most.show(5)
 
     /* Le nombre d'infraction par année */
@@ -51,21 +56,23 @@ object analyse {
 
 
     /* Top des 5 infractions les plus pratiqués */
-     val dftop =  df.groupBy(col("code")).count.sort(desc("count")).limit(5)
-      dftop.show()
+    val dftop =  df.groupBy(col("code")).count.sort(desc("count")).limit(5)
+    dftop.show()
 
 
     /* filtrer les infraction par une periode de date */
     /* les infractions qui ont eu lieux entre 2015 et 2016 */
-    val df_date = df.filter(to_date(df("date")).between("2015-01-01","2016-01-01"))
+    val df_date = df.filter(to_date(df("date"),"MM/dd/yyyy").between("2015-01-01","2016-01-01"))
     df_date.show(5)
 
 
-    /* Infraction qui ont eu lieu à partir de 2017 */
-    val df_dategr = df.filter(to_date(df("date")).geq(lit("2017-01-01")))
-
+    /* Infraction qui ont eu lieu à partir de janvier 2017 */
+    val df_dategr = df.filter(to_date(df("date"),"MM/dd/yyyy").geq(lit("2017-01-01")))
+    df_dategr.show()
     /* la batterie moyenne */
     val df_moyen_batterie = df.select(avg("battery"))
+
+
   }
 
 
