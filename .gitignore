@@ -6,7 +6,13 @@
 /drone_msg/*
 /archived_nypd_msg/*
 /csv/*
-.idea/**
+/.idea/libraries/*
+/.idea/libraries/
+/.idea/modules/*
+/.idea/modules/
+/.idea/
+/.idea/*
+/.idea/**
 /nypd_csv/**
 !nypd_csv/.gitkeep
 !drone_msg/.gitkeep
