@@ -48,8 +48,6 @@ object AlertHandlerConsumerStream {
       .option("enable.auto.commit", false: java.lang.Boolean)
       .load()
 
-    import spark.sqlContext.implicits._
-
     df.selectExpr("CAST(value AS STRING)")
       .select(from_json(col("value"), schema).as("data")).select("data.*")
       .select(col("droneId"),

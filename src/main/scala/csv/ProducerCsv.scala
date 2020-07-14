@@ -69,7 +69,7 @@ class ProducerCsv {
           if(exception!=null) {
             exception.printStackTrace()
           }else{
-            println(s"common.Message about the sent record: $recordMetaData")
+            println(s"Message about the sent record: $recordMetaData")
           }
         }
       )

@@ -55,7 +55,6 @@ object DroneConsumerStreamStorage {
         col("battery")
       )
       .writeStream
-      .option("format", "append")
       .format("csv")
       .option("header", value = true)
       .option("checkpointLocation", "tmp/msg_stream/sparkcheckpoints")

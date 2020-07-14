@@ -93,11 +93,11 @@ class Drone() {
           if(exception!=null) {
             exception.printStackTrace()
           }else{
-            println(s"common.Message about the sent record: $recordMetaData")
+            println(s"Message about the sent record: $recordMetaData")
           }
         }
       )
-        Thread.sleep(2000)
+        Thread.sleep(1000)
     }
 
     producer.close()
