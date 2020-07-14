@@ -4,15 +4,12 @@ import org.apache.kafka.clients.producer._
 import play.api.libs.json.{Json, OWrites}
 import java.util.{Properties, UUID}
 
+import common.{Localisation, Message, ViolationMessage}
 import org.apache.kafka.common.serialization.StringSerializer
 
 import scala.annotation.tailrec
 import scala.util.{Random, Try}
 
-case class Localisation(var longitude: Float, var latitude: Float)
-case class ViolationMessage(var code: Int, var imageId: String)
-case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   var position: Localisation, var date: String, var time: String, var battery: Int)
 
 class ProducerCsv {
 
@@ -60,7 +57,8 @@ class ProducerCsv {
         position = Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat()),
         time = ajustHour(hour_msg, hourstr),
         date = date_msg,
-        battery = 100 )
+        battery = Random.nextInt(100)
+        )
       )
 
       println(jsMsg.toString())
@@ -71,7 +69,7 @@ class ProducerCsv {
           if(exception!=null) {
             exception.printStackTrace()
           }else{
-            println(s"Message about the sent record: $recordMetaData")
+            println(s"common.Message about the sent record: $recordMetaData")
           }
         }
       )

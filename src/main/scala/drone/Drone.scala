@@ -6,24 +6,16 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.{Properties, UUID}
 import java.time.format.DateTimeFormatter
 
+import common.{Localisation, Message, ViolationMessage}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
 import play.api.libs.json.{Json, OWrites}
 
 import scala.util.Random
 
-case class Localisation(var longitude: Float, var latitude: Float)
-
-case class ViolationMessage(var code: Int, var imageId: String)
-
-case class Message(var violation: Boolean, var droneId: String, var violationMessage: Option[ViolationMessage],
-                   var position: Localisation, var date: String, var time: String, var battery: Int)
-
 class Drone() {
 
   val droneId: String = UUID.randomUUID().toString
-
-  var battery: Int = 100
 
   val pattern: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
@@ -54,19 +46,10 @@ class Drone() {
     Localisation(Random.nextInt(90) + Random.nextFloat(), Random.nextInt(90) + Random.nextFloat())
   }
 
-  def updateBattery(): Unit = {
-    battery = battery - {
-      Random.nextInt(1000) match {
-      case 0 => 1
-      case _ => 0
-      }
-    }
-  }
-
   def initMessage(): Message = {
-    Random.nextInt(3) match {
+    Random.nextInt(5) match {
       //violation
-      case 0 =>
+      case 0 | 1 =>
         Message(
           violation = true,
           droneId = droneId,
@@ -74,10 +57,10 @@ class Drone() {
           position = randomLocalisation(),
           date = randomDate(),
           time = randomHour(),
-          battery = battery
+          battery = Random.nextInt(101)
         )
       //alert code = 100
-      case 1 =>
+      case 2 =>
         Message(
           violation = true,
           droneId = droneId,
@@ -85,7 +68,7 @@ class Drone() {
           position = randomLocalisation(),
           date = randomDate(),
           time = randomHour(),
-          battery = battery
+          battery = Random.nextInt(101)
         )
       //regular message
       case _ =>
@@ -96,7 +79,7 @@ class Drone() {
           position = randomLocalisation(),
           date = randomDate(),
           time = randomHour(),
-          battery = battery
+          battery = Random.nextInt(101)
         )
     }
   }
@@ -110,12 +93,11 @@ class Drone() {
           if(exception!=null) {
             exception.printStackTrace()
           }else{
-            println(s"Message about the sent record: $recordMetaData")
+            println(s"common.Message about the sent record: $recordMetaData")
           }
         }
       )
-        updateBattery()
- //       Thread.sleep(1000)
+        Thread.sleep(2000)
     }
 
     producer.close()

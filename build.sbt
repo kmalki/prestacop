@@ -5,7 +5,6 @@ scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3" % Runtime,
-  "au.com.bytecode" % "opencsv" % "2.4",
   "org.apache.spark" %% "spark-core" % "2.4.0",
   "org.apache.spark" %% "spark-sql" % "2.4.0",
   "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.0",
