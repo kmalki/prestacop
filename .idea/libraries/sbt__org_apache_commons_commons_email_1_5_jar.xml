@@ -2,10 +2,14 @@
   <library name="sbt: org.apache.commons:commons-email:1.5:jar">
     <CLASSES>
       <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.commons/commons-email/jars/commons-email-1.5.jar!/" />
+      <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-email/1.5/commons-email-1.5.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-email/1.5/commons-email-1.5-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES>
       <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.commons/commons-email/srcs/commons-email-1.5-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-email/1.5/commons-email-1.5-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
