@@ -1,3 +1,19 @@
+# Présentation : Projet en binôme de fin de module de Spark de première année de mastère :
+
+Le but de ce projet était d’implémenter Spark Streaming et Kafka dans un contexte d’un drone policier qui détectait et envoyait des infractions. 
+
+Il fallait implémenter le drone et l’envoie des infractions via un producer Kafka, ainsi qu’un consumer Spark Streaming permettant la récupération de ces messages depuis Kafka et le stockage au format csv.
+
+Il fallait également implémenter le producer via Kafka d’un lourd fichier csv d’historique d’infractions en y ajoutant des fausses données comme le numéro du drone, ou encore la localisation, et le consumer Spark Streaming qui convient pour stocker à nouveau en csv. Ce processus faisait référence à une problématique imposée qui simulait que la police devait transférer ce fichier d’historisation à la nouvelle entreprise qui mettait en place les drones afin d’améliorer leurs statistiques, sauf que les pc étaient trop faibles pour transférer un fichier aussi lourd. 
+
+Enfin, développer un job d’analyse Spark sur les données du csv d’historique d’infractions récupérées par le consumer, comme par exemple le code d’infraction la plus courante, ou encore la répartition des codes d’infraction en fonction de chaque drone.
+
+Stack technique :
+- Scala
+- Spark & Spark Streaming
+- Kafka
+
+
 ## Prestacop
 
 This project is a final semester project for our course of Spark.
